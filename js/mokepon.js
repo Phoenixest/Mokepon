@@ -16,6 +16,12 @@ const messages = document.getElementById("result");
 const playerAttacks = document.getElementById("player-attacks");
 const enemyAttacks = document.getElementById("enemy-attacks");
 
+const showMapSection = document.getElementById("show-map");
+const map = document.getElementById("map");
+
+let canvas = map.getContext("2d");
+let range;
+
 let mokepones = [];
 let playerPet;
 let mokeponAttacks;
@@ -24,7 +30,7 @@ let playerAttack;
 let enemyAttack;
 let combatResult;
 let secuencePlayerAttacks = [];
-let secuenceEnemyAttacks =[];
+let secuenceEnemyAttacks = [];
 let mokeponesOption;
 let playerLives = 3;
 let playerVictories = 0;
@@ -49,6 +55,14 @@ class Mokepon {
     this.photo = photo;
     this.life = life;
     this.attacks = [];
+    this.x = 20;
+    this.y = 30;
+    this.width = 80;
+    this.height = 80;
+    this.mapPhoto = new Image();
+    this.mapPhoto.src = photo;
+    this.speedX = 0;
+    this.speedY = 0;
   }
 }
 
@@ -106,6 +120,7 @@ mokepones.push(hipodoge, capipepo, ratigueya, langostelvis, tucapalma, pydos);
 function startGame() {
   attackSelectionSection.style.display = "none";
   resetSection.style.display = "none";
+  showMapSection.style.display = "none";
 
   mokepones.forEach((mokepon) => {
     mokeponesOption = `
@@ -131,8 +146,11 @@ function startGame() {
 }
 
 function petSelector() {
-  attackSelectionSection.style.display = "flex";
+  //attackSelectionSection.style.display = "flex";
+  showMapSection.style.display = "flex";
   petSelectionSection.style.display = "none";
+
+  startMap()
 
   if (hipodogeInput.checked) {
     playersPetName.innerHTML = hipodogeInput.id;
@@ -223,25 +241,27 @@ function randomEnemyAttack() {
   startCombat();
 }
 
-function startCombat(){
+function startCombat() {
   if (secuencePlayerAttacks.length == 4) {
-    combat()
+    combat();
   }
 }
 
-function indexAttacks(i){
+function indexAttacks(i) {
   playerAttack = secuencePlayerAttacks[i];
   enemyAttack = secuenceEnemyAttacks[i];
 }
 
 function combat() {
   for (let i = 0; i < secuencePlayerAttacks.length; i++) {
-    indexAttacks(i)
+    indexAttacks(i);
     if (secuencePlayerAttacks[i] == secuenceEnemyAttacks[i]) {
       combatResult = "Empataste 😮";
     } else if (
-      (secuencePlayerAttacks[i] == "FUEGO" && secuenceEnemyAttacks[i] == "PLANTA") ||
-      (secuencePlayerAttacks[i] == "PLANTA" && secuenceEnemyAttacks[i] == "AGUA") ||
+      (secuencePlayerAttacks[i] == "FUEGO" &&
+        secuenceEnemyAttacks[i] == "PLANTA") ||
+      (secuencePlayerAttacks[i] == "PLANTA" &&
+        secuenceEnemyAttacks[i] == "AGUA") ||
       (secuencePlayerAttacks[i] == "AGUA" && secuenceEnemyAttacks[i] == "FUEGO")
     ) {
       combatResult = "Ganaste 🥳";
@@ -290,6 +310,70 @@ function resetGame() {
 
 function randomNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function drawCharacter() {
+  capipepo.x += capipepo.speedX;
+  capipepo.y += capipepo.speedY;
+  canvas.clearRect(0, 0, map.width, map.height);
+  canvas.drawImage(
+    capipepo.mapPhoto,
+    capipepo.x,
+    capipepo.y,
+    capipepo.width,
+    capipepo.height
+  );
+}
+
+function moveRight() {
+  capipepo.speedX = 5;
+}
+
+function moveLeft() {
+  capipepo.speedX = -5;
+}
+
+function moveDown() {
+  capipepo.speedY = 5;
+}
+
+function moveUp() {
+  capipepo.speedY = -5;
+}
+
+function stopMove() {
+  capipepo.speedX = 0;
+  capipepo.speedY = 0;
+}
+
+function pressKey(event) {
+  switch (event.key) {
+    case "ArrowUp":
+      moveUp();
+      break;
+
+    case "ArrowDown":
+      moveDown();
+      break;
+
+    case "ArrowLeft":
+      moveLeft();
+      break;
+
+    case "ArrowRight":
+      moveRight();
+      break;
+
+    default:
+      break;
+  }
+}
+
+function startMap(){
+  range = setInterval(drawCharacter, 35);
+
+  window.addEventListener("keydown", pressKey);
+  window.addEventListener("keyup", stopMove);
 }
 
 window.addEventListener("load", startGame);

@@ -116,6 +116,18 @@ input:checked + label{
   align-items: center;
 }
 
+#show-map {
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+}
+
+#map {
+  border: 2px solid white;
+  height: 480px;
+  width: 640px;
+}
+
 @media (max-width: 360px) {
   .cards, .attacks-cards {
     flex-direction: column;
