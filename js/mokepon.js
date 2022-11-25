@@ -21,9 +21,12 @@ const map = document.getElementById("map");
 
 let canvas = map.getContext("2d");
 let range;
+let backgroundMap = new Image()
+backgroundMap.src = "./assets/mokemap.png"
 
 let mokepones = [];
 let playerPet;
+let playerPetObject;
 let mokeponAttacks;
 let enemyMokeponAttacks;
 let playerAttack;
@@ -50,19 +53,29 @@ let grassButton;
 let buttons = [];
 
 class Mokepon {
-  constructor(name, photo, life) {
+  constructor(name, photo, life, x = 160, y = 35) {
     this.name = name;
     this.photo = photo;
     this.life = life;
     this.attacks = [];
-    this.x = 20;
-    this.y = 30;
-    this.width = 80;
-    this.height = 80;
+    this.x = x;
+    this.y = y;
+    this.width = 60;
+    this.height = 60;
     this.mapPhoto = new Image();
     this.mapPhoto.src = photo;
     this.speedX = 0;
     this.speedY = 0;
+  }
+
+  drawMokepon() {
+    canvas.drawImage(
+      this.mapPhoto,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
   }
 }
 
@@ -72,6 +85,10 @@ let ratigueya = new Mokepon("Ratigueya", "./assets/Ratigueya.png", 5);
 let langostelvis = new Mokepon("Langostelvis", "./assets/Langostelvis.png", 5);
 let tucapalma = new Mokepon("Tucapalma", "./assets/Tucapalma.png", 5);
 let pydos = new Mokepon("Pydos", "./assets/Pydos.png", 5);
+
+let enemyHipodoge = new Mokepon("Hipodoge", "./assets/Hipodoge.png", 5, 300, 460);
+let enemyCapipepo = new Mokepon("Capipepo", "./assets/Capipepo.png", 5, 580, 500);
+let enemyRatigueya = new Mokepon("Ratigueya", "./assets/Ratigueya.png", 5, 450, 290);
 
 hipodoge.attacks.push(
   { name: "💧", id: "water-button" },
@@ -150,8 +167,6 @@ function petSelector() {
   showMapSection.style.display = "flex";
   petSelectionSection.style.display = "none";
 
-  startMap()
-
   if (hipodogeInput.checked) {
     playersPetName.innerHTML = hipodogeInput.id;
     playerPet = hipodogeInput.id;
@@ -176,6 +191,7 @@ function petSelector() {
   }
 
   extractAttacks(playerPet);
+  startMap()
   enemyPetSelector();
 }
 
@@ -312,38 +328,36 @@ function randomNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function drawCharacter() {
-  capipepo.x += capipepo.speedX;
-  capipepo.y += capipepo.speedY;
+function drawCanvas() {
+  playerPetObject.x += playerPetObject.speedX;
+  playerPetObject.y += playerPetObject.speedY;
   canvas.clearRect(0, 0, map.width, map.height);
-  canvas.drawImage(
-    capipepo.mapPhoto,
-    capipepo.x,
-    capipepo.y,
-    capipepo.width,
-    capipepo.height
-  );
+  canvas.drawImage(backgroundMap, 0, 0, map.width, map.height)
+  playerPetObject.drawMokepon()
+  enemyHipodoge.drawMokepon()
+  enemyCapipepo.drawMokepon()
+  enemyRatigueya.drawMokepon()
 }
 
 function moveRight() {
-  capipepo.speedX = 5;
+  playerPetObject.speedX = 5;
 }
 
 function moveLeft() {
-  capipepo.speedX = -5;
+  playerPetObject.speedX = -5;
 }
 
 function moveDown() {
-  capipepo.speedY = 5;
+  playerPetObject.speedY = 5;
 }
 
 function moveUp() {
-  capipepo.speedY = -5;
+  playerPetObject.speedY = -5;
 }
 
 function stopMove() {
-  capipepo.speedX = 0;
-  capipepo.speedY = 0;
+  playerPetObject.speedX = 0;
+  playerPetObject.speedY = 0;
 }
 
 function pressKey(event) {
@@ -370,10 +384,21 @@ function pressKey(event) {
 }
 
 function startMap(){
-  range = setInterval(drawCharacter, 35);
+  map.width = 800
+  map.height = 600
+  playerPetObject = getPet(playerPet)
+  range = setInterval(drawCanvas, 35);
 
   window.addEventListener("keydown", pressKey);
   window.addEventListener("keyup", stopMove);
+}
+
+function getPet(playerPet){
+  for (let i = 0; i < mokepones.length; i++) {
+    if (playerPet == mokepones[i].name) {
+      return mokepones[i]
+    }
+  }
 }
 
 window.addEventListener("load", startGame);
