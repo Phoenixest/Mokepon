@@ -23,6 +23,16 @@ let canvas = map.getContext("2d");
 let range;
 let backgroundMap = new Image()
 backgroundMap.src = "./assets/mokemap.png"
+let maxWidthMap = 800
+let screenHeight
+let widthMap = window.innerWidth - 20
+screenHeight = widthMap * 600 / 800
+map.width = widthMap
+map.height = screenHeight
+
+if (widthMap > maxWidthMap){
+  widthMap = maxWidthMap - 20
+}
 
 let mokepones = [];
 let playerPet;
@@ -53,15 +63,15 @@ let grassButton;
 let buttons = [];
 
 class Mokepon {
-  constructor(name, photo, life, x = 160, y = 35) {
+  constructor(name, photo, life) {
     this.name = name;
     this.photo = photo;
     this.life = life;
     this.attacks = [];
-    this.x = x;
-    this.y = y;
     this.width = 60;
     this.height = 60;
+    this.x = randomNumber(0, map.width - this.width);
+    this.y = randomNumber(0, map.height - this.height);
     this.mapPhoto = new Image();
     this.mapPhoto.src = photo;
     this.speedX = 0;
@@ -86,11 +96,18 @@ let langostelvis = new Mokepon("Langostelvis", "./assets/Langostelvis.png", 5);
 let tucapalma = new Mokepon("Tucapalma", "./assets/Tucapalma.png", 5);
 let pydos = new Mokepon("Pydos", "./assets/Pydos.png", 5);
 
-let enemyHipodoge = new Mokepon("Hipodoge", "./assets/Hipodoge.png", 5, 300, 460);
-let enemyCapipepo = new Mokepon("Capipepo", "./assets/Capipepo.png", 5, 580, 500);
-let enemyRatigueya = new Mokepon("Ratigueya", "./assets/Ratigueya.png", 5, 450, 290);
+let enemyHipodoge = new Mokepon("Hipodoge", "./assets/Hipodoge.png", 5);
+let enemyCapipepo = new Mokepon("Capipepo", "./assets/Capipepo.png", 5);
+let enemyRatigueya = new Mokepon("Ratigueya", "./assets/Ratigueya.png", 5);
 
 hipodoge.attacks.push(
+  { name: "💧", id: "water-button" },
+  { name: "💧", id: "water-button" },
+  { name: "🔥", id: "fire-button" },
+  { name: "🍃", id: "grass-button" }
+);
+
+enemyHipodoge.attacks.push(
   { name: "💧", id: "water-button" },
   { name: "💧", id: "water-button" },
   { name: "🔥", id: "fire-button" },
@@ -102,6 +119,20 @@ capipepo.attacks.push(
   { name: "🍃", id: "grass-button" },
   { name: "💧", id: "water-button" },
   { name: "🍃", id: "grass-button" }
+);
+
+enemyCapipepo.attacks.push(
+  { name: "🔥", id: "fire-button" },
+  { name: "🍃", id: "grass-button" },
+  { name: "💧", id: "water-button" },
+  { name: "🍃", id: "grass-button" }
+);
+
+enemyRatigueya.attacks.push(
+  { name: "💧", id: "water-button" },
+  { name: "🍃", id: "grass-button" },
+  { name: "🔥", id: "fire-button" },
+  { name: "🔥", id: "fire-button" }
 );
 
 ratigueya.attacks.push(
@@ -163,7 +194,6 @@ function startGame() {
 }
 
 function petSelector() {
-  //attackSelectionSection.style.display = "flex";
   showMapSection.style.display = "flex";
   petSelectionSection.style.display = "none";
 
@@ -192,7 +222,6 @@ function petSelector() {
 
   extractAttacks(playerPet);
   startMap()
-  enemyPetSelector();
 }
 
 function extractAttacks(playerPet) {
@@ -237,10 +266,9 @@ function secuenceAttack() {
   });
 }
 
-function enemyPetSelector() {
-  let randomPet = randomNumber(0, mokepones.length - 1);
-  enemyPetName.innerHTML = mokepones[randomPet].name;
-  enemyMokeponAttacks = mokepones[randomPet].attacks;
+function enemyPetSelector(enemy) {
+  enemyPetName.innerHTML = enemy.name;
+  enemyMokeponAttacks = enemy.attacks;
   secuenceAttack();
 }
 
@@ -337,6 +365,11 @@ function drawCanvas() {
   enemyHipodoge.drawMokepon()
   enemyCapipepo.drawMokepon()
   enemyRatigueya.drawMokepon()
+  if (playerPetObject.speedX != 0 || playerPetObject.speedY != 0) {
+    getCollision(enemyHipodoge)
+    getCollision(enemyCapipepo)
+    getCollision(enemyRatigueya)
+  }
 }
 
 function moveRight() {
@@ -384,8 +417,6 @@ function pressKey(event) {
 }
 
 function startMap(){
-  map.width = 800
-  map.height = 600
   playerPetObject = getPet(playerPet)
   range = setInterval(drawCanvas, 35);
 
@@ -399,6 +430,32 @@ function getPet(playerPet){
       return mokepones[i]
     }
   }
+}
+
+function getCollision(enemy) {
+  const upEnemy = enemy.y
+  const downEnemy = enemy.y + enemy.height
+  const rightEnemy = enemy.x + enemy.width
+  const leftEnemy = enemy.x
+
+  const upPet = playerPetObject.y
+  const downPet = playerPetObject.y + playerPetObject.height
+  const rightPet = playerPetObject.x + playerPetObject.width
+  const leftPet = playerPetObject.x
+
+  if (
+    downPet < upEnemy ||
+    upPet > downEnemy ||
+    rightPet < leftEnemy ||
+    leftPet > rightEnemy
+  ) {
+    return
+  }
+  stopMove()
+  clearInterval(range)
+  attackSelectionSection.style.display = "flex";
+  showMapSection.style.display = "none";
+  enemyPetSelector(enemy);
 }
 
 window.addEventListener("load", startGame);
